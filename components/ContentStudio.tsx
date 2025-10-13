@@ -1,7 +1,6 @@
-
 import React, { useState, useCallback, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import type { Chat } from "@google/genai";
-import { createChatSession, getSystemInstructionTweet, getSystemInstructionThread, generateTweet, generateTweetThread, regenerateTweet, generateImage, generateImagePromptFromTweet, generateVideo, summarizeUrl, summarizeFileContent, searchWeb, getTrendingTopics, proofreadThread } from '../services/geminiService';
+import { createChatSession, getSystemInstructionTweet, getSystemInstructionThread, generateTweet, generateTweetThread, regenerateTweet, generateImage, generateVideo, summarizeUrl, summarizeFileContent, searchWeb, getTrendingTopics, proofreadThread } from '../services/geminiService';
 import { CreateMode } from '../types';
 import type { XUserProfile, EditableTweet, BrandVoiceProfile, ChatMessage, Source, Tweet, TrendingTopic } from '../types';
 import TweetPreview from './TweetPreview';
@@ -398,26 +397,15 @@ export const ContentStudio = forwardRef<ContentStudioHandles, {}>((props, ref) =
   };
   
   // --- Media Generation Logic ---
-  const openMediaPromptModal = async (type: 'image' | 'video', index: number) => {
+  const openMediaPromptModal = (type: 'image' | 'video', index: number) => {
     setMediaGenerationTarget({ type, index });
     const tweetContent = tweets[index]?.content?.trim() || '';
     
+    // Use the tweet content directly, or the main prompt as a fallback.
+    // This is instantaneous and gives the user a relevant starting point.
+    setMediaPrompt(tweetContent || prompt);
+    
     setIsMediaPromptModalOpen(true);
-
-    if (type === 'image' && tweetContent) {
-        setMediaPrompt("🧠 Generando un prompt descriptivo...");
-        try {
-            const descriptivePrompt = await generateImagePromptFromTweet(tweetContent);
-            setMediaPrompt(descriptivePrompt);
-        } catch (error) {
-            console.error("Error al generar el prompt de la imagen, usando el contenido del tuit como respaldo:", error);
-            // Fallback to the original tweet content if prompt generation fails
-            setMediaPrompt(tweetContent);
-        }
-    } else {
-        // For video or if the tweet is empty, use the original logic
-        setMediaPrompt(tweetContent || prompt); 
-    }
   };
 
   const closeMediaPromptModal = () => {
@@ -1031,7 +1019,7 @@ export const ContentStudio = forwardRef<ContentStudioHandles, {}>((props, ref) =
                     />
                     <div className="flex justify-end gap-3 mt-6">
                         <button onClick={closeMediaPromptModal} className="ai-button bg-bg-primary hover:bg-border-primary/50 text-text-primary px-6">Cancelar</button>
-                        <button onClick={handleConfirmMediaGeneration} disabled={!mediaPrompt || mediaPrompt === "🧠 Generando un prompt descriptivo..."} className="ai-button bg-accent-primary hover:opacity-90 text-white px-6">Generar</button>
+                        <button onClick={handleConfirmMediaGeneration} disabled={!mediaPrompt} className="ai-button bg-accent-primary hover:opacity-90 text-white px-6">Generar</button>
                     </div>
                 </div>
             </div>

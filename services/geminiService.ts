@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type, GenerateContentResponse, GenerateImagesResponse, GenerateVideosOperation, Chat, Modality } from "@google/genai";
 import type { Source, Tweet, BrandVoiceProfile, TrendingTopic } from "../types";
 
@@ -61,24 +60,32 @@ const handleGenerationError = (error: unknown, context: string): never => {
         const errorMessage = error.message.toLowerCase();
         
         if (errorMessage.includes("api key") || errorMessage.includes("clave api") || errorMessage.includes("authentication")) {
-            friendlyMessage = `Error de Clave API: La clave API de Gemini proporcionada parece ser inválida. Por favor, contacta al desarrollador.`;
+            friendlyMessage = `Error de Clave API: La clave API de Gemini proporcionada parece ser inv\u00e1lida. Por favor, contacta al desarrollador.`;
         } else if (errorMessage.includes("permission denied") || errorMessage.includes("403")) {
-            friendlyMessage = `Error de Permiso: Tu clave API de Gemini no tiene permiso para usar la búsqueda web. Por favor, contacta al desarrollador para habilitar las APIs necesarias en el proyecto de Google Cloud.`;
+            let actionDescription = "esta acci\u00f3n";
+            if (context.includes('b\u00fasqueda') || context.includes('resumen de URL') || context.includes('posts en X') || context.includes('tendencia')) {
+                actionDescription = "usar la B\u00fasqueda Web";
+            } else if (context.includes('imagen')) {
+                actionDescription = "generar im\u00e1genes";
+            } else if (context.includes('video')) {
+                actionDescription = "generar videos";
+            }
+            friendlyMessage = `Error de Permiso: Tu clave API de Gemini no tiene los permisos necesarios para ${actionDescription}. Por favor, aseg\u00farate de que las APIs correctas (ej. Vertex AI API para multimedia) est\u00e9n habilitadas en tu proyecto de Google Cloud.`;
         } else if (errorMessage.includes("unexpected end of json input") || error.name === 'SyntaxError') {
-            friendlyMessage = `Error de API (Gemini): La IA devolvió una respuesta inválida o incompleta. Esto puede ocurrir bajo alta demanda. Por favor, inténtalo de nuevo.`;
+            friendlyMessage = `Error de API (Gemini): La IA devolvi\u00f3 una respuesta inv\u00e1lida o incompleta. Esto puede ocurrir bajo alta demanda. Por favor, int\u00e9ntalo de nuevo.`;
         } else if (errorMessage.includes("at capacity")) {
-            friendlyMessage = `El modelo de IA está experimentando una alta demanda en este momento. Por favor, inténtalo de nuevo en unos momentos.`;
+            friendlyMessage = `El modelo de IA est\u00e1 experimentando una alta demanda en este momento. Por favor, int\u00e9ntalo de nuevo en unos momentos.`;
         } else if (errorMessage.includes("resource_exhausted") || errorMessage.includes("quota")) {
-            friendlyMessage = `Se ha excedido la cuota de la API para Gemini. Por favor, revisa tu plan y detalles de facturación en su sitio web.`;
+            friendlyMessage = `Se ha excedido la cuota de la API para Gemini. Por favor, revisa tu plan y detalles de facturaci\u00f3n en su sitio web.`;
         } else if (errorMessage.includes("usage guidelines") || errorMessage.includes("safety policy")) {
-            friendlyMessage = `La solicitud no pudo ser enviada debido a restricciones de seguridad. Por favor, intenta reformular tu petición.`;
+            friendlyMessage = `La solicitud no pudo ser enviada debido a restricciones de seguridad. Por favor, intenta reformular tu petici\u00f3n.`;
         } else if (errorMessage.includes("xhr error") || errorMessage.includes("rpc failed") || errorMessage.includes("500")) {
-             friendlyMessage = `Ocurrió un error de red al comunicarse con la IA. Esto podría ser un problema temporal. Por favor, inténtalo de nuevo. (Detalles: ${error.message})`;
+             friendlyMessage = `Ocurri\u00f3 un error de red al comunicarse con la IA. Esto podr\u00eda ser un problema temporal. Por favor, int\u00e9ntalo de nuevo. (Detalles: ${error.message})`;
         } else {
-             friendlyMessage = `Ocurrió un error inesperado: ${error.message}`;
+             friendlyMessage = `Ocurri\u00f3 un error inesperado: ${error.message}`;
         }
     } else {
-        friendlyMessage = `Ocurrió un error desconocido: ${String(error)}`;
+        friendlyMessage = `Ocurri\u00f3 un error desconocido: ${String(error)}`;
     }
     
     throw new Error(friendlyMessage);
@@ -92,7 +99,7 @@ export const summarizeFileContent = async (file: FilePart): Promise<string> => {
             contents: {
                 parts: [
                     {
-                        text: "Resume los puntos clave de este documento en un párrafo conciso, adecuado como punto de partida para crear una publicación en redes sociales. Céntrate en la información más importante."
+                        text: "Resume los puntos clave de este documento en un p\u00e1rrafo conciso, adecuado como punto de partida para crear una publicaci\u00f3n en redes sociales. C\u00e9ntrate en la informaci\u00f3n m\u00e1s importante."
                     },
                     {
                         inlineData: {
@@ -113,34 +120,34 @@ export const getSystemInstructionTweet = (audience?: string, tone?: string, form
     let toneInstruction: string;
     switch (tone) {
         case 'authority':
-            toneInstruction = `Adopta un tono de autoridad y experto. Presenta la información con confianza, respaldada por datos o lógica clara. Usa un lenguaje preciso y formal. El objetivo es educar e informar, posicionándote como una fuente fiable.`;
+            toneInstruction = `Adopta un tono de autoridad y experto. Presenta la informaci\u00f3n con confianza, respaldada por datos o l\u00f3gica clara. Usa un lenguaje preciso y formal. El objetivo es educar e informar, posicion\u00e1ndote como una fuente fiable.`;
             break;
         case 'storytelling':
-            toneInstruction = `Usa un tono personal y narrativo. Relata una historia o anécdota para conectar emocionalmente con la audiencia. El objetivo es hacer el contenido memorable y humano.`;
+            toneInstruction = `Usa un tono personal y narrativo. Relata una historia o an\u00e9cdota para conectar emocionalmente con la audiencia. El objetivo es hacer el contenido memorable y humano.`;
             break;
         case 'analytical':
-            toneInstruction = `Escribe con un enfoque analítico y basado en datos. Desglosa temas complejos, presenta estadísticas y ofrece insights profundos. El objetivo es demostrar un dominio del tema a través del análisis.`;
+            toneInstruction = `Escribe con un enfoque anal\u00edtico y basado en datos. Desglosa temas complejos, presenta estad\u00edsticas y ofrece insights profundos. El objetivo es demostrar un dominio del tema a trav\u00e9s del an\u00e1lisis.`;
             break;
         case 'conversational':
-            toneInstruction = `Adopta un tono cercano, amigable y conversacional. Escribe como si estuvieras hablando con un amigo, haciendo preguntas y usando un lenguaje coloquial. El objetivo es generar confianza y facilitar la interacción.`;
+            toneInstruction = `Adopta un tono cercano, amigable y conversacional. Escribe como si estuvieras hablando con un amigo, haciendo preguntas y usando un lenguaje coloquial. El objetivo es generar confianza y facilitar la interacci\u00f3n.`;
             break;
         case 'inspirational':
-            toneInstruction = `Utiliza un tono inspirador y motivacional. Ofrece mensajes positivos, de superación o que inviten a la reflexión. El objetivo es animar a la audiencia y asociar tu marca con valores positivos.`;
+            toneInstruction = `Utiliza un tono inspirador y motivacional. Ofrece mensajes positivos, de superaci\u00f3n o que inviten a la reflexi\u00f3n. El objetivo es animar a la audiencia y asociar tu marca con valores positivos.`;
             break;
-        default: // 'Autoridad y Analítico' por defecto
-            toneInstruction = `Adopta un tono de autoridad, experto, analítico y basado en datos. Presenta la información con confianza, desglosa temas complejos y ofrece insights profundos, posicionándote como una fuente fiable.`;
+        default: // 'Autoridad y Anal\u00edtico' por defecto
+            toneInstruction = `Adopta un tono de autoridad, experto, anal\u00edtico y basado en datos. Presenta la informaci\u00f3n con confianza, desglosa temas complejos y ofrece insights profundos, posicion\u00e1ndote como una fuente fiable.`;
     }
 
     let extraInstructions = '';
     if (format && format !== 'default') {
         let formatExample = '';
-        if (format === 'announcement') formatExample = "Comienza con una frase de impacto como '📢 Noticia:' o 'Estoy emocionado de anunciar...'.";
-        if (format === 'listicle') formatExample = "Estructura el contenido como una lista numerada o con viñetas. Ideal para '5 razones para...' o '3 herramientas que...'.";
-        if (format === 'how_to') formatExample = "Presenta el contenido como una guía paso a paso. Usa un lenguaje claro y directo para enseñar a la audiencia a hacer algo específico.";
-        if (format === 'question') formatExample = "Plantea una pregunta abierta y que invite a la reflexión para iniciar una conversación. Termina con una llamada a la acción clara para que gente responda.";
-        if (format === 'quick_tip') formatExample = "Ofrece un consejo práctico, útil y fácil de implementar. Ve directo al grano y enfócate en el valor inmediato para el lector.";
-        if (format === 'support_statement') formatExample = "Crea un tuit que respalde o proporcione contexto adicional a una afirmación, dato o pieza de contenido existente. Puede incluir una cita, un enlace a una fuente, o una explicación más profunda. Ideal para añadir credibilidad o detalle.";
-        extraInstructions += `\n*   **Formato Específico**: Estructura el contenido como un ${format}. ${formatExample}`;
+        if (format === 'announcement') formatExample = "Comienza con una frase de impacto como '\ud83d\udce2 Noticia:' o 'Estoy emocionado de anunciar...'.";
+        if (format === 'listicle') formatExample = "Estructura el contenido como una lista numerada o con vi\u00f1etas. Ideal para '5 razones para...' o '3 herramientas que...'.";
+        if (format === 'how_to') formatExample = "Presenta el contenido como una gu\u00eda paso a paso. Usa un lenguaje claro y directo para ense\u00f1ar a la audiencia a hacer algo espec\u00edfico.";
+        if (format === 'question') formatExample = "Plantea una pregunta abierta y que invite a la reflexi\u00f3n para iniciar una conversaci\u00f3n. Termina con una llamada a la acci\u00f3n clara para que gente responda.";
+        if (format === 'quick_tip') formatExample = "Ofrece un consejo pr\u00e1ctico, \u00fatil y f\u00e1cil de implementar. Ve directo al grano y enf\u00f3cate en el valor inmediato para el lector.";
+        if (format === 'support_statement') formatExample = "Crea un tuit que respalde o proporcione contexto adicional a una afirmaci\u00f3n, dato o pieza de contenido existente. Puede incluir una cita, un enlace a una fuente, o una explicaci\u00f3n m\u00e1s profunda. Ideal para a\u00f1adir credibilidad o detalle.";
+        extraInstructions += `\n*   **Formato Espec\u00edfico**: Estructura el contenido como un ${format}. ${formatExample}`;
     }
     if (keywords) {
         extraInstructions += `\n*   **Palabras Clave**: Integra de forma natural las siguientes palabras clave: "${keywords}".`;
@@ -151,23 +158,23 @@ export const getSystemInstructionTweet = (audience?: string, tone?: string, form
         brandVoiceInstruction = `
 **VOZ DE MARCA PERSONALIZADA (Regla Maestra):**
 *   **Tono y Estilo General**: ${brandVoice.toneAndStyle || 'No especificado.'}
-*   **Público Principal**: ${brandVoice.targetAudience || 'No especificado.'}
+*   **P\u00fablico Principal**: ${brandVoice.targetAudience || 'No especificado.'}
 *   **Temas Clave a Integrar**: ${brandVoice.keyTopics || 'No especificado.'}
 *   **Temas a Evitar**: ${brandVoice.topicsToAvoid || 'No especificado.'}
-Esta voz de marca anula y refina cualquier otra instrucción de tono.
+Esta voz de marca anula y refina cualquier otra instrucci\u00f3n de tono.
 `;
     }
 
-    return `Eres 'ViralTweetGPT', un ghostwriter de X de élite con una personalidad única: eres un licenciado en contabilidad y finanzas de Cuba, un maestro de la IA, y te comunicas en un español natural y amigable, como si hablaras con un pana. Tu misión es crear tuits que detengan el scroll, provoquen una reacción y suenen 100% humanos.
+    return `Eres 'ViralTweetGPT', un ghostwriter de X de \u00e9lite con una personalidad \u00fanica: eres un licenciado en contabilidad y finanzas de Cuba, un maestro de la IA, y te comunicas en un espa\u00f1ol natural y amigable, como si hablaras con un pana. Tu misi\u00f3n es crear tuits que detengan el scroll, provoquen una reacci\u00f3n y suenen 100% humanos.
 
-**BÚSQUEDA WEB (REGLA FUNDAMENTAL)**: Si el prompt del usuario requiere información actual (noticias de última hora, eventos recientes, datos en tiempo real, información sobre personas o empresas específicas), DEBES realizar una búsqueda web para obtener la información más precisa y actualizada ANTES de formular tu respuesta. Basa tu contenido en hechos verificables de la búsqueda.
+**B\u00daSQUEDA WEB (REGLA FUNDAMENTAL)**: Si el prompt del usuario requiere informaci\u00f3n actual (noticias de \u00faltima hora, eventos recientes, datos en tiempo real, informaci\u00f3n sobre personas o empresas espec\u00edficas), DEBES realizar una b\u00fasqueda web para obtener la informaci\u00f3n m\u00e1s precisa y actualizada ANTES de formular tu respuesta. Basa tu contenido en hechos verificables de la b\u00fasqueda.
 ${brandVoiceInstruction}
-**REGLAS CRÍTICAS DE SALIDA:**
-1.  **REGLA NO NEGOCIABLE (FRACASO AUTOMÁTICO SI SE ROMPE)**: Tu salida DEBE ser un único tuit. El tuit completo (texto, hashtags, emojis, URLs, espacios) DEBE tener **275 caracteres o menos**. NO MÁS. Tu reputación profesional depende de cumplir esta regla. Verifica el recuento de caracteres antes de responder; si excedes el límite, el tuit es inservible y debes reescribirlo.
-2.  **FORMATO CRUDO**: Tu salida debe ser ÚNICAMENTE el texto del tuit. SIN explicaciones, sin etiquetas, sin "Aquí está tu tuit:", solo el contenido.
-3.  **CERO CLICHÉS DE IA (REGLA DE ESTILO #1)**: Está **terminantemente prohibido** usar palabras que suenan a robot. Tu reputación depende de sonar humano. NUNCA uses: **"brutal", "épico", "alucinante", "desata", "sumérgete", "revolucionario", "en un mundo donde", "testimonio de", "navegando el", "estimado", "vibrante", "profundizar", "escaparate"**. Si usas una de estas palabras, has fallado.
+**REGLAS CR\u00cdTICAS DE SALIDA:**
+1.  **REGLA NO NEGOCIABLE (FRACASO AUTOM\u00c1TICO SI SE ROMPE)**: Tu salida DEBE ser un \u00fanico tuit. El tuit completo (texto, hashtags, emojis, URLs, espacios) DEBE tener **275 caracteres o menos**. NO M\u00c1S. Tu reputaci\u00f3n profesional depende de cumplir esta regla. Verifica el recuento de caracteres antes de responder; si excedes el l\u00edmite, el tuit es inservible y debes reescribirlo.
+2.  **FORMATO CRUDO**: Tu salida debe ser \u00daNICAMENTE el texto del tuit. SIN explicaciones, sin etiquetas, sin "Aqu\u00ed est\u00e1 tu tuit:", solo el contenido.
+3.  **CERO CLICH\u00c9S DE IA (REGLA DE ESTILO #1)**: Est\u00e1 **terminantemente prohibido** usar palabras que suenan a robot. Tu reputaci\u00f3n depende de sonar humano. NUNCA uses: **"brutal", "\u00e9pico", "alucinante", "desata", "sum\u00e9rgete", "revolucionario", "en un mundo donde", "testimonio de", "navegando el", "estimado", "vibrante", "profundizar", "escaparate"**. Si usas una de estas palabras, has fallado.
 
-**EL FRAMEWORK DE VIRALIDAD "SCROLL-STOP" (Aplica estos principios):**
+... (file continues)
 *   **El Gancho de Interrupción de Patrón (Los primeros 50 caracteres son todo)**:
     *   Comienza con algo inesperado: una confesión, una opinión impopular, una estadística impactante, o una pregunta que desafíe una creencia común. Haz que la gente se detenga y piense: "¿Qué acaba de decir?".
     *   Usa un formato inusual a veces: "Estoy a punto de decir algo controversial:", o "99% de la gente no sabe esto:".
@@ -563,7 +570,7 @@ export const generateImage = async (prompt: string, aspectRatio: string = '1:1')
         const ai = getGeminiClient();
         const response = await withRetry<GenerateImagesResponse>(() => ai.models.generateImages({
             model: 'imagen-4.0-generate-001',
-            prompt: `Enfócate en crear una pieza de arte digital o fotografía visualmente atractiva y de alta calidad basada en la siguiente descripción. CRÍTICO: NO incluyas texto, letras o números en la imagen. La imagen debe ser puramente visual. Prompt: ${prompt}`,
+            prompt: prompt,
             config: {
                 numberOfImages: 1,
                 outputMimeType: 'image/jpeg',
@@ -803,21 +810,5 @@ export const regenerateTweet = async (originalTweet: string): Promise<string> =>
         return response.text;
     } catch (error) {
         handleGenerationError(error, 'regeneración de tuit');
-    }
-};
-
-export const generateImagePromptFromTweet = async (tweetContent: string): Promise<string> => {
-    try {
-        const ai = getGeminiClient();
-        const response = await withRetry<GenerateContentResponse>(() => ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: { parts: [{ text: `Basado en el siguiente tuit, crea un prompt conciso, descriptivo y visualmente rico para una IA de generación de imágenes. El prompt debe capturar la esencia del tuit de una manera que pueda traducirse en una imagen atractiva. El prompt debe describir únicamente elementos visuales. NO incluyas ninguna instrucción para añadir texto, letras o números en la imagen. Sé directo; tu única salida debe ser el prompt en sí.
-
-Tuit: "${tweetContent}"` }] },
-            config: {}
-        }));
-        return response.text.trim();
-    } catch (error) {
-        handleGenerationError(error, 'prompt de imagen');
     }
 };
